@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Une invitation pour toi 🍽️</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #fde8f0 0%, #fef3e2 55%, #e8f4fd 100%);
+      font-family: 'Lato', sans-serif;
+    }
+
+    .scene {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem 3.5rem;
+      text-align: center;
+      position: relative;
+      animation: fadeIn 0.7s ease;
+    }
+
+    .deco {
+      position: fixed;
+      font-size: 28px;
+      opacity: 0.2;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .question {
+      font-family: 'Playfair Display', serif;
+      font-size: 34px;
+      font-weight: 700;
+      color: #3a2a3a;
+      margin-bottom: 3rem;
+      line-height: 1.4;
+      max-width: 520px;
+    }
+
+    .question span { color: #c4417a; }
+
+    .btn-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 80px;
+    }
+
+    .btn {
+      padding: 16px 48px;
+      font-family: 'Lato', sans-serif;
+      font-size: 19px;
+      font-weight: 400;
+      border-radius: 50px;
+      cursor: pointer;
+      border: none;
+      letter-spacing: 0.04em;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.13);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .btn-oui {
+      background: #e8426e;
+      color: #fff;
+    }
+
+    .btn-oui:hover {
+      transform: scale(1.07);
+      box-shadow: 0 6px 24px rgba(232,66,110,0.38);
+    }
+
+    .btn-non {
+      background: #6db8e8;
+      color: #fff;
+    }
+
+    .btn-non.is-fixed {
+      position: fixed;
+      z-index: 100;
+      transition: top 0.05s, left 0.05s;
+    }
+
+    .hint {
+      margin-top: 2.2rem;
+      font-size: 12px;
+      color: #a080a0;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      transition: opacity 0.4s;
+    }
+
+    .success {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      text-align: center;
+      animation: fadeIn 0.6s ease;
+      padding: 2rem;
+    }
+
+    .success-icon { font-size: 64px; line-height: 1; }
+
+    .success-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #c4417a;
+      max-width: 420px;
+      line-height: 1.4;
+    }
+
+    .success-sub {
+      font-size: 17px;
+      color: #5a4a5a;
+      line-height: 1.75;
+      max-width: 400px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <span class="deco" style="top:20px; left:30px;">🌸</span>
+  <span class="deco" style="top:20px; right:30px;">🍷</span>
+  <span class="deco" style="bottom:20px; left:30px;">✨</span>
+  <span class="deco" style="bottom:20px; right:30px;">🌹</span>
+
+  <div class="scene" id="scene">
+    <p class="question">Veux-tu m'accompagner <span>au restaurant</span>&nbsp;?</p>
+    <div class="btn-row">
+      <button class="btn btn-oui" id="btn-oui" onclick="handleOui()">Oui ✨</button>
+      <button class="btn btn-non" id="btn-non">Non 🙅</button>
+    </div>
+    <p class="hint" id="hint">passe la souris sur "Non"</p>
+  </div>
+
+  <div class="success" id="success-screen">
+    <div class="success-icon">🍽️</div>
+    <p class="success-title">Génial, je savais que tu dirais oui !</p>
+    <p class="success-sub">Prépare ta plus jolie robe pour passer une excellente soirée 🌹</p>
+  </div>
+
+  <script>
+    const btnNon = document.getElementById('btn-non');
+    const hint   = document.getElementById('hint');
+    let escaped  = false;
+
+    btnNon.addEventListener('mouseenter', function(e) {
+      if (escaped) return;
+      escaped = true;
+      hint.style.opacity = '0';
+
+      const rect = btnNon.getBoundingClientRect();
+      btnNon.classList.add('is-fixed');
+      btnNon.style.left = rect.left + 'px';
+      btnNon.style.top  = rect.top  + 'px';
+
+      setTimeout(moveAway, 20);
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!escaped) return;
+      const rect = btnNon.getBoundingClientRect();
+      const cx = rect.left + rect.width  / 2;
+      const cy = rect.top  + rect.height / 2;
+      const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+      if (dist < 160) moveAway(e);
+    });
+
+    function moveAway(e) {
+      const margin = 20;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const bw = btnNon.offsetWidth;
+      const bh = btnNon.offsetHeight;
+      const mx = e && e.clientX != null ? e.clientX : vw / 2;
+      const my = e && e.clientY != null ? e.clientY : vh / 2;
+
+      let best = null, bestDist = 0;
+      for (let i = 0; i < 30; i++) {
+        const x = margin + Math.random() * (vw - bw - margin * 2);
+        const y = margin + Math.random() * (vh - bh - margin * 2);
+        const d = Math.hypot(x + bw/2 - mx, y + bh/2 - my);
+        if (d > bestDist) { bestDist = d; best = { x, y }; }
+      }
+      if (best) {
+        btnNon.style.left = best.x + 'px';
+        btnNon.style.top  = best.y + 'px';
+      }
+    }
+
+    function handleOui() {
+      document.getElementById('scene').style.display = 'none';
+      const s = document.getElementById('success-screen');
+      s.style.display = 'flex';
+    }
+  </script>
+</body>
+</html>
